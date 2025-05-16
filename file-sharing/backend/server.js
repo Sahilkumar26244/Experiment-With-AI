@@ -17,7 +17,7 @@ const corsOptions = {
   allowedHeaders: ['Content-Type'], // Specify allowed headers
 };
 
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 // Ensure uploads/ exists
