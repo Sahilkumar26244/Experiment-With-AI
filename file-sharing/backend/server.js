@@ -47,7 +47,7 @@ app.post('/upload', upload.single('file'), async (req, res) => {
   };
   writeMeta(meta);
 
-  res.send({ link: `http://localhost:${PORT}/file/${req.file.filename}` });
+  res.send({ link: `https://experiment-with-ai.onrender.com/file/${req.file.filename}` });
 });
 
 // File info endpoint (to check if password is required)
@@ -59,6 +59,26 @@ app.get('/file/:filename/info', (req, res) => {
     passwordProtected: !!meta[filename].passwordHash,
     originalName: meta[filename].originalName
   });
+});
+
+// GET endpoint for accessing files directly (for images and non-protected files)
+app.get('/file/:filename', (req, res) => {
+  const { filename } = req.params;
+  const meta = readMeta();
+  
+  // Check if file exists in metadata
+  if (!meta[filename]) return res.status(404).send({ message: 'File not found' });
+  
+  // If file is password protected, don't allow direct access
+  if (meta[filename].passwordHash) {
+    return res.status(401).send({ message: 'This file is password protected. Please use the download endpoint.' });
+  }
+  
+  const filePath = path.join(uploadsDir, filename);
+  if (!fs.existsSync(filePath)) return res.status(404).send({ message: 'File not found on disk' });
+  
+  // Send the file
+  res.sendFile(filePath);
 });
 
 // Download endpoint (POST, checks password if needed, returns file)
