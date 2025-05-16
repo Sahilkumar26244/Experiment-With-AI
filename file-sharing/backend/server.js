@@ -11,7 +11,13 @@ const PORT = 5000;
 const uploadsDir = path.join(__dirname, 'uploads');
 const metaPath = path.join(__dirname, 'fileMeta.json');
 
-app.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:3001', 'https://file-sharingwebapp.netlify.app/'], // Add your frontend URLs here
+  methods: ['GET', 'POST'], // Specify allowed HTTP methods
+  allowedHeaders: ['Content-Type'], // Specify allowed headers
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Ensure uploads/ exists
@@ -96,6 +102,10 @@ app.post('/file/:filename', async (req, res) => {
   const filePath = path.join(uploadsDir, filename);
   if (!fs.existsSync(filePath)) return res.status(404).send({ message: 'File not found on disk' });
   res.download(filePath, meta[filename].originalName);
+});
+
+app.get('/', (req, res) => {
+  res.send('File sharing server is running');
 });
 
 app.listen(PORT, () => {
